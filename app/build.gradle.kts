@@ -41,7 +41,7 @@ android {
 }
 
 dependencies {
-
+    // Copy right by bakaqc 2025
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -78,4 +78,10 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+
+    // Material3
+    implementation("androidx.compose.material3:material3:1.2.0")
+
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.8.8")
 }
