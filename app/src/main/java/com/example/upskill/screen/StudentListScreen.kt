@@ -31,6 +31,14 @@ fun StudentListScreen(
     val studentList by viewModel.students.collectAsState(initial = emptyList())
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    var isSorted by remember { mutableStateOf(false) }
+
+    // Sắp xếp danh sách nếu cần
+    val displayedList = if (isSorted) {
+        studentList.sortedBy { it.first_name }
+    } else {
+        studentList
+    }
 
     Scaffold(
         topBar = {
@@ -58,7 +66,7 @@ fun StudentListScreen(
                 Text("+", style = MaterialTheme.typography.titleLarge)
             }
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) } // Thêm SnackbarHost
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -66,11 +74,23 @@ fun StudentListScreen(
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            Button(
-                onClick = { viewModel.refreshStudents() },
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("Refresh list of students", style = MaterialTheme.typography.bodyLarge)
+                Button(
+                    onClick = { viewModel.refreshStudents() },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Refresh", style = MaterialTheme.typography.bodyLarge)
+                }
+
+                Button(
+                    onClick = { isSorted = !isSorted },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(if (isSorted) "Unsort" else "Sort A-Z", style = MaterialTheme.typography.bodyLarge)
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -86,11 +106,11 @@ fun StudentListScreen(
                 )
             } else {
                 LazyColumn {
-                    items(studentList) { student ->
+                    items(displayedList) { student ->
                         StudentItem(
                             student = student,
                             onDelete = {
-                                val deletedStudent = student // Lưu lại student bị xóa
+                                val deletedStudent = student
                                 viewModel.deleteStudent(student)
 
                                 coroutineScope.launch {
@@ -100,7 +120,7 @@ fun StudentListScreen(
                                         duration = SnackbarDuration.Short
                                     )
                                     if (result == SnackbarResult.ActionPerformed) {
-                                        viewModel.addStudent(deletedStudent) // Khôi phục nếu nhấn Undo
+                                        viewModel.addStudent(deletedStudent)
                                     }
                                 }
                             }
@@ -111,6 +131,7 @@ fun StudentListScreen(
         }
     }
 }
+
 
 @Composable
 fun StudentItem(student: Student, onDelete: () -> Unit) {
