@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +20,7 @@ import coil.compose.rememberImagePainter
 import com.example.upskill.model.Student
 import com.example.upskill.viewmodel.StudentViewModel
 import androidx.compose.ui.graphics.Color
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,6 +29,8 @@ fun StudentListScreen(
     onAddStudentClick: () -> Unit
 ) {
     val studentList by viewModel.students.collectAsState(initial = emptyList())
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -52,7 +57,8 @@ fun StudentListScreen(
             ) {
                 Text("+", style = MaterialTheme.typography.titleLarge)
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) } // Thêm SnackbarHost
     ) { padding ->
         Column(
             modifier = Modifier
@@ -81,7 +87,24 @@ fun StudentListScreen(
             } else {
                 LazyColumn {
                     items(studentList) { student ->
-                        StudentItem(student = student, onDelete = { viewModel.deleteStudent(student) })
+                        StudentItem(
+                            student = student,
+                            onDelete = {
+                                val deletedStudent = student // Lưu lại student bị xóa
+                                viewModel.deleteStudent(student)
+
+                                coroutineScope.launch {
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = "Deleted ${student.first_name} ${student.last_name}",
+                                        actionLabel = "Undo",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        viewModel.addStudent(deletedStudent) // Khôi phục nếu nhấn Undo
+                                    }
+                                }
+                            }
+                        )
                     }
                 }
             }
@@ -94,8 +117,7 @@ fun StudentItem(student: Student, onDelete: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable { onDelete() },
+            .padding(vertical = 4.dp),
     ) {
         Row(
             modifier = Modifier.padding(8.dp),
@@ -119,11 +141,24 @@ fun StudentItem(student: Student, onDelete: () -> Unit) {
 
             Column(
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxHeight()
+                modifier = Modifier.weight(1f) // Để phần văn bản chiếm hết khoảng trống
             ) {
                 Text(text = "${student.first_name} ${student.last_name}", style = MaterialTheme.typography.titleLarge)
                 Text(text = student.email, style = MaterialTheme.typography.bodyLarge)
             }
+
+            // Nút Delete
+            IconButton(
+                onClick = onDelete
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete student",
+                    tint = Color.Red,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
         }
     }
 }
+
