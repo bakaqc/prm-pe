@@ -49,7 +49,7 @@ fun StudentListScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Student List - bakaqc",
+                            text = "\uD83C\uDF93 Student Management App",
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                             textAlign = TextAlign.Center
                         )

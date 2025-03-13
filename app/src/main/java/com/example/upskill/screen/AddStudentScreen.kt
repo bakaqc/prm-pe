@@ -50,7 +50,7 @@
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Add New Student - bakaqc",
+                                text = "Add New Student",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                                 textAlign = TextAlign.Center
                             )
